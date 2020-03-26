@@ -1,16 +1,3 @@
-'use strict';
-
-// load from localstorage
-document.addEventListener('DOMContentLoaded', getTodos);
-
-// Count items from start in localstorage
-document.addEventListener('DOMContentLoaded', itemsLeft);
-
-// Set the checked variable for the "toggle all todo items"
-document.addEventListener('DOMContentLoaded', setChecked);
-let checked;
-
-// The list with all the todoItems
 let todoItems = [];
 
 // Add a new todo
@@ -28,16 +15,13 @@ document.querySelector('#nav-bar').addEventListener('click', displayItems);
 // Clear completed
 document.querySelector('#clear-btn').addEventListener('click', clearCompleted);
 
-// Toggle all todo items
-document.querySelector('.fa-angle-down').addEventListener('click', toggleAllItems);
-
 //update item
 document.querySelector('#todo-list').addEventListener('dblclick', updateTodo)
 
 
 function addTodo(event) {
     if (event.keyCode == 13) {
-        let textInput = event.target.value.trim();
+        let textInput = event.target.value;
         if (textInput !== '') {
             const todo = {
                 textInput,
@@ -46,89 +30,19 @@ function addTodo(event) {
             };
             // add a new todo to the list todoItems
             todoItems.push(todo);
-            // store in localstorage
-            storeTodoInLocalStorage(todo);
             // clear the input
             event.target.value = '';
             // add new li to ul including todo data
             const listItem = document.querySelector('#todo-list');
             listItem.insertAdjacentHTML('beforeend', `
-            <li class="todo-item ${todo.checked}" data-key="${todo.id}">
-                <i class="uncheck checkbox" id="${todo.id}"></i>
+            <li class="todo-item ${todo.checked}" contentEditable = "true" data-key="${todo.id} maxlength="30"">
+                <i class="far fa-circle checkbox" id="${todo.id}"></i>
                 <label>${todo.textInput}</label>
-                <input type="text" class="newInput" value=${todo.textInput} style="display:none"/>
-                <i class="delete-item"></i>
+                <i class="fas fa-times delete-item"></i>
             </li>
             `);
         }
         itemsLeft();
-    }
-}
-
-
-function storeTodoInLocalStorage(todo) {
-    let todos;
-    if (localStorage.getItem('todos') === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem('todos'))
-    }
-    todos.push(todo);
-    localStorage.setItem('todos', JSON.stringify(todos));
-}
-
-
-function getTodos() {
-    let todos;
-    if (localStorage.getItem('todos') === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem('todos'))
-    }
-
-    todos.forEach(todo => {
-        if (todo.checked) {
-            // add a new todo to the list todoItems
-            todoItems.push(todo);
-            // add new li to ul including todo data
-            const listItem = document.querySelector('#todo-list');
-            listItem.insertAdjacentHTML('beforeend', `
-            <li class="todo-item overline" data-key="${todo.id}">
-                <i class="check checkbox" id="${todo.id}"></i>
-                <label>${todo.textInput}</label>
-                <input type="text" class="newInput" value=${todo.textInput} style="display:none"/>
-                <i class="delete-item"></i>
-            </li>
-            `);
-        } else {
-            // add a new todo to the list todoItems
-            todoItems.push(todo);
-            // add new li to ul including todo data
-            const listItem = document.querySelector('#todo-list');
-            listItem.insertAdjacentHTML('beforeend', `
-            <li class="todo-item ${todo.checked}" data-key="${todo.id}">
-                <i class="uncheck checkbox" id="${todo.id}"></i>
-                <label>${todo.textInput}</label>
-                <input type="text" class="newInput" value=${todo.textInput} style="display:none"/>
-                <i class="delete-item"></i>
-            </li>
-            `);
-        }
-    });
-}
-
-
-function setChecked() {
-    let checkedTrue = [];
-    let checkedFalse = [];
-
-    checkedFalse = todoItems.filter(todo => todo.checked === false);
-    checkedTrue = todoItems.filter(todo => todo.checked === true);
-
-    if (checkedFalse.length === todoItems.length) {
-        checked = false;
-    } else if (checkedTrue.length === todoItems.length) {
-        checked = true;
     }
 }
 
@@ -150,47 +64,12 @@ function toggle(itemKey) {
     const item = document.querySelector(`[data-key='${itemKey}']`);
 
     if (todoItems[itemIndex].checked) {
-        item.firstElementChild.setAttribute('class', 'check checkbox');
+        item.firstElementChild.setAttribute('class', 'far fa-check-circle checkbox');
         item.setAttribute('class', 'todo-item overline');
     } else {
-        item.firstElementChild.setAttribute('class', 'uncheck checkbox');
-        item.setAttribute('class', 'todo-item false');
+        item.firstElementChild.setAttribute('class', 'far fa-circle checkbox');
+        item.setAttribute('class', 'todo-item');
     }
-    updateLocalStorage();
-    itemsLeft();
-}
-
-
-function updateLocalStorage() {
-    let todos = JSON.parse(localStorage.getItem('todos'));
-    todoItems.forEach((todo, index) => {
-        if (todo.checked) {
-            todos[index].checked = true;
-        } else if (!todo.checked) {
-            todos[index].checked = false;
-        }
-    });
-    localStorage.setItem('todos', JSON.stringify(todos));
-}
-
-
-function toggleAllItems() {
-    const todos = document.querySelectorAll('#todo-list li i:first-child');
-    todos.forEach(todo => {
-        let itemId = todo.getAttribute('id');
-        let itemIndex = todoItems.findIndex(item => item.id == itemId);
-        if (!checked) {
-            todoItems[itemIndex].checked = true;
-            todo.setAttribute('class', 'check checkbox');
-            todo.parentElement.setAttribute('class', 'todo-item overline');
-        } else {
-            todoItems[itemIndex].checked = false;
-            todo.setAttribute('class', 'uncheck checkbox');
-            todo.parentElement.setAttribute('class', 'todo-item false');
-        }
-    });
-    updateLocalStorage();
-    checked = !checked;
     itemsLeft();
 }
 
@@ -208,51 +87,24 @@ function deleteItem(event) {
         // remove from the todoItems list
         todoItems = todoItems.filter(item => item.id != todoElement.dataset.key);
         itemsLeft();
-        //remove from localstorage
-        removeTodoFromLocalStorage(todoElement);
     }
 }
 
-
-function removeTodoFromLocalStorage(todoItem) {
-    let todos;
-    if (localStorage.getItem('todos') === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem('todos'))
-    }
-
-    todos.forEach(function(todo, index) {
-        if (todoItem.children[1].textContent === todo.textInput) {
-            todos.splice(index, 1);
-        }
-    });
-    localStorage.setItem('todos', JSON.stringify(todos));
-}
 
 function clearCompleted() {
     const listItems = document.querySelectorAll('#todo-list li');
     listItems.forEach(item => {
         if (!item.classList.contains('false')) {
             item.remove();
-            removeTodoFromLocalStorage(item);
+            itemsLeft();
         }
     });
     // Clear the deleted items from the todoItems list
     todoItems = todoItems.filter(item => item.checked === false);
-    itemsLeft();
 }
 
 
 function displayItems(event) {
-    //change URL
-    if (event.target.parentElement.id === 'completed') {
-        location.hash = 'completed';
-    } else if (event.target.parentElement.id === 'active') {
-        location.hash = 'active';
-    } else {
-        location.hash = '';
-    }
     const listItems = document.querySelectorAll('#todo-list li');
     listItems.forEach(item => {
         item.style.display = 'flex';
@@ -262,9 +114,7 @@ function displayItems(event) {
             item.style.display = 'none';
         }
     });
-    event.preventDefault();
 }
-
 
 function itemsLeft() {
     const todos = document.querySelector("#count");
@@ -272,7 +122,7 @@ function itemsLeft() {
     todos.textContent = numberOfItemsLeft.length + ' items left';
 
     //Hide nav-bar and arrow
-    if (todoItems.length === 0) {
+    if (numberOfItemsLeft.length === 0 && todoItems.length === 0) {
         document.querySelector('.list-container').style.display = 'none';
         document.querySelector('.fa-angle-down').style.display = 'none';
     } else {
@@ -280,44 +130,26 @@ function itemsLeft() {
         document.querySelector('.fa-angle-down').style.display = 'block';
     }
 }
-
-
-function updateTodo(event) {
-    if (event.target.parentElement.classList.contains('todo-item')) {
-        let todos;
-        const itemKey = event.target.parentElement.dataset.key;
-        const todoElement = document.querySelector(`[data-key='${itemKey}']`);
-
-        todoElement.children[0].setAttribute('style', 'display:none');
-        todoElement.children[1].setAttribute('style', 'display:none');
-        todoElement.children[2].setAttribute('style', 'display:block');
-        todoElement.children[2].focus();
-
-        todoElement.addEventListener('change', function(event) {
-            if (event.keyCode == 13 || event.type == 'change') {
-                let textInput = event.target.value;
-                todoElement.children[1].textContent = textInput;
-                // update the element
-                todoElement.children[0].setAttribute('style', 'display:block');
-                todoElement.children[1].setAttribute('style', 'display:block');
-                todoElement.children[2].setAttribute('style', 'display:none');
-                // update the todoList
-                const itemKey = event.target.parentElement.dataset.key;
-                const itemIndex = todoItems.findIndex(item => item.id === Number(itemKey));
-                todoItems.forEach(todo => {
-                    if (todo.id == itemKey) {
-                        todo.textInput = textInput;
-                    }
-                });
-                //update localstorage
-                todos = JSON.parse(localStorage.getItem('todos'));
-                todos.forEach(todo => {
-                    if (todo.id == itemKey) {
-                        todo.textInput = textInput;
-                    }
-                });
-                localStorage.setItem('todos', JSON.stringify(todos));
+// update todo-item
+function updateTodo() {
+    document.addEventListener('keypress', function(e) {
+        if (e.currentTarget.activeElement.className === 'content') {
+            if ((e.keyCode || e.which) == 13) {
+                var li = document.createElement('li');
+                var ce = document.createAttribute('contenteditable');
+                ce.value = "true";
+                var cl = document.createAttribute('class');
+                cl.value = 'content';
+                li.setAttributeNode(ce);
+                li.setAttributeNode(cl);
+                e.currentTarget.activeElement.insertAfter(li);
+                li.focus();
+                return false;
+            } else {
+                return true;
             }
-        });
-    }
+
+        }
+
+    })
 }
